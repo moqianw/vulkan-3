@@ -7,6 +7,11 @@ namespace GM {
         
     }
     void Scene::init() {
+
+        //pipeline
+
+        pipelinemanager.setDevice(device);
+        pipelinemanager.init();
         ///create material
         materialmanager.begin(device);
         GM::ShaderCreateInfo shadercreateinfo;
@@ -38,14 +43,16 @@ namespace GM {
             .setBindingCount(1);
 
         setlayouts.push_back(vk::DescriptorSetLayout(device.createDescriptorSetLayout(setlayoutcreateinfo)));
+        
+        materialmanager.addDescriptorSetLayouts(setlayouts);
         std::vector<vk::PushConstantRange> pushconstants;
         pushconstants.push_back(vk::PushConstantRange()
             .setOffset(0)
             .setSize(sizeof(glm::mat4))
             .setStageFlags(vk::ShaderStageFlagBits::eVertex));
-        auto pipelinelayout = materialmanager.createPipelineLayout(setlayouts, pushconstants);
+        auto pipelinelayout = pipelinemanager.createPipelineLayout(setlayouts, pushconstants);
         rhimaterial->pipelinelayout = pipelinelayout;
-        auto pipeline = materialmanager.createGraphPipeline(renderpass, pipelinelayout, shader->getPipelineShaderStageCreateInfos());
+        auto pipeline = pipelinemanager.createGraphPipeline(renderpass, pipelinelayout, shader->getPipelineShaderStageCreateInfos());
         rhimaterial->pipeline = pipeline;
         ///set mesh
         auto commandbuffer = commandpool->allocateCommandBuffer();
@@ -139,6 +146,7 @@ namespace GM {
         commandpool.reset();
         cameras.clear();
         gameobjects.clear();
+        pipelinemanager.destroy();
         materialmanager.destroy();
         shadermanager.destroy();
 

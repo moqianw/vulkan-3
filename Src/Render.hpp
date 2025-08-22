@@ -29,16 +29,29 @@ namespace CT {
 		void bindMaterial(const std::shared_ptr<GM::RHIMaterial>& material);
 		void bindMesh(const std::shared_ptr<GM::Mesh>& mesh);
 		void init();
-		void initCamera();
 		void destroy();
+		Frame& currentFrame() {
+			return frames[currentframe];
+		}
+		Render& setDevice(const vk::Device& device);
+		Render& setRenderPass(const vk::RenderPass& renderpass);
+		Render& setSurfaceFormat(const vk::Format& format);
+		Render& setGraphQueue(const vk::Queue& queue);
+		Render& setPresentQueue(const vk::Queue& queue);
+		Render& setSwapchainExtent(const vk::Extent2D& extent);
+		Render& setDepthImage(const std::shared_ptr<UT::Image> depthimage);
+		Render& setSwapchainImageViews(const std::vector<vk::ImageView>& imageviews);
+		Render& setSwapchain(const vk::SwapchainKHR& swapchain);
+		Render& setFrameCount(const uint32_t& count);
+		Render& setCommandPool(const std::shared_ptr<UT::CommandPool> pool);
+		vk::RenderPass const getRenderPass();
 	private:
-		friend class Contaxt;
+
 		vk::Device device = nullptr;
 		vk::RenderPass renderpass = nullptr;
 		std::optional<vk::Format> surfaceformat;
 
-		std::optional<uint32_t> grapicefamilyindex;
-		std::optional<uint32_t> presentfamilyindex;
+
 		vk::Queue grapicesqueue = nullptr;
 		vk::Queue presentqueue = nullptr;
 
@@ -47,9 +60,7 @@ namespace CT {
 		std::vector<vk::ImageView> swapchainimageviews;
 		vk::SwapchainKHR swapchain = nullptr;
 		uint32_t framecount = 0;
-		Frame& currentFrame() {
-			return frames[currentframe];
-		}
+
 	private:
 
 		//camera
@@ -59,10 +70,9 @@ namespace CT {
 		vk::DescriptorSet cameradescriptorset = nullptr;
 		///
 		uint32_t imageindex = 0;
-		std::vector<std::unique_ptr<UT::CommandPool>> commandpools;
+		std::shared_ptr<UT::CommandPool> commandpool;
 		std::vector<vk::CommandBuffer> commandbuffers;
 		void createRenderpass();
-		void createCommandPool();
 		///frame
 
 		std::vector<vk::Framebuffer> framebuffers;

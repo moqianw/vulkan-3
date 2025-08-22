@@ -131,7 +131,8 @@ namespace CT {
 	void Render::init()
 	{
 		if (!device) throw std::runtime_error("Init Render ERROE: not set device");
-		createCommandPool();
+		if(!commandpool) throw std::runtime_error("Init Render ERROE: not set commandpool");
+
 		frames.resize(framecount);
 		vk::SemaphoreCreateInfo createinfo;
 		vk::FenceCreateInfo fencecreateinfo;
@@ -140,17 +141,12 @@ namespace CT {
 			frame.imageAvailableSemaphores = device.createSemaphore(createinfo);
 			frame.renderFinishedSemaphores = device.createSemaphore(createinfo);
 			frame.inFlightFences = device.createFence(fencecreateinfo);
-			frame.commandbuffer = commandpools[0]->allocateCommandBuffer();
+			frame.commandbuffer = commandpool->allocateCommandBuffer();
 		}
 		createRenderpass();
 		createFrameBuffers();
-		initCamera();
 	}
 
-	void Render::initCamera()
-	{
-		
-	}
 
 	void Render::createRenderpass(){
 		vk::RenderPassCreateInfo createinfo;
@@ -207,17 +203,12 @@ namespace CT {
 		renderpass = device.createRenderPass(createinfo);
 		if (!renderpass) throw std::runtime_error("create renderpass false");
 	}
-	void Render::createCommandPool() {
-		UT::CommandPoolCreateInfo createinfo;
-		vk::CommandPoolCreateInfo poolcreateinfo;
-		poolcreateinfo.setFlags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer)
-			.setQueueFamilyIndex(grapicefamilyindex.value());
-		createinfo.setDevice(device)
-			.setCommandPoolCreateInfo(poolcreateinfo);
-		commandpools.push_back(std::make_unique<UT::CommandPool>(createinfo));
-	}
+
 	void Render::createFrameBuffers()
 	{
+		if(framecount == 0) throw std::runtime_error("Init Render ERROE: not framecount error");
+		if(!swapchainextent) throw std::runtime_error("Init Render ERROE: not set swapchainextent");
+		if(swapchainimageviews.empty()) throw std::runtime_error("Init Render ERROE: not set swapchainimageviews");
 		framebuffers.resize(framecount);
 		vk::FramebufferCreateInfo createinfo;
 		createinfo
@@ -238,7 +229,7 @@ namespace CT {
 		for (auto& framebuffer : framebuffers) {
 			if (framebuffer) device.destroyFramebuffer(framebuffer);
 		}
-		commandpools.clear();
+		commandpool.reset();
 		if (renderpass) device.destroyRenderPass(renderpass);
 
 		for (auto& frame : frames) {
@@ -247,5 +238,62 @@ namespace CT {
 			device.destroyFence(frame.inFlightFences);
 		}
 		device = nullptr;
+	}
+
+
+
+	Render& Render::setDevice(const vk::Device& device) {
+		this->device = device;
+		return *this;
+	}
+	Render& Render::setDepthImage(const std::shared_ptr<UT::Image> image) {
+		this->depthimage = image;
+		return *this;
+	}
+	Render& Render::setSwapchainImageViews(const std::vector<vk::ImageView>& imageviews)
+	{
+		this->swapchainimageviews = imageviews;
+		return *this;
+	}
+	Render& Render::setSwapchain(const vk::SwapchainKHR& swapchain)
+	{
+		this->swapchain = swapchain;
+
+		return *this;
+	}
+	Render& Render::setFrameCount(const uint32_t& count)
+	{
+		this->framecount = count;
+		return *this;
+	}
+	Render& Render::setSurfaceFormat(const vk::Format& format)
+	{
+		this->surfaceformat = format;
+		return *this;
+	}
+
+	Render& Render::setGraphQueue(const vk::Queue& queue)
+	{
+		this->grapicesqueue = queue;
+		return *this;
+	}
+	Render& Render::setPresentQueue(const vk::Queue& queue) {
+		this->presentqueue = queue;
+		return *this;
+	}
+	Render& Render::setSwapchainExtent(const vk::Extent2D& extent)
+	{
+		this->swapchainextent = extent;
+		return *this;
+		
+	}
+	Render& Render::setCommandPool(const std::shared_ptr<UT::CommandPool> pool) {
+		this->commandpool = pool;
+		return *this;
+	}
+	vk::RenderPass const Render::getRenderPass()
+	{
+		if (!renderpass) throw std::runtime_error("get Renderpass error: renderpass not create");
+		return renderpass;
 	}
 }

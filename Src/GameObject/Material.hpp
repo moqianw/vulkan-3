@@ -43,23 +43,17 @@ namespace GM {
 		std::shared_ptr<Material> createMaterial(const std::shared_ptr<Shader>& shader);
 		std::shared_ptr<RHIMaterial> createRHIMaterial(const std::shared_ptr<MaterialInstance>& material);
 
-		vk::Pipeline createGraphPipeline(
-			const vk::RenderPass& renderpass,
-			const vk::PipelineLayout& pipelinelayout,
-			const std::vector<vk::PipelineShaderStageCreateInfo>& shaderstages);
-		vk::PipelineLayout createPipelineLayout(
-			const std::vector<vk::DescriptorSetLayout>& setlayouts,
-			const std::vector<vk::PushConstantRange>& pushconstants);
-		
+
 		std::vector<vk::DescriptorSet> createDescriptorSet(
 			const std::vector<vk::DescriptorSetLayout>& setlayout);
-		std::vector<std::pair<vk::PipelineLayout, std::vector<vk::DescriptorSetLayout>>> pipelinelayouts;
+		void addDescriptorSetLayouts(const std::vector<vk::DescriptorSetLayout>& setlayouts);
+		
 	private:
+		std::vector<vk::DescriptorSetLayout> descriptorsetlayouts;
 		std::vector<std::shared_ptr<UT::DescriptorPool>> descriptorpools;
 		std::vector<std::shared_ptr<Material>> materials;
-		std::vector<vk::Pipeline> pipelines;
 
 		vk::Device device = nullptr;
-		vk::PipelineCache pipelinecache = nullptr;
+
 	};
 }

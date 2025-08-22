@@ -42,7 +42,7 @@ namespace CT {
 		auto& cmd = render.currentFrame().commandbuffer;
 		cmd.bindDescriptorSets(
 			vk::PipelineBindPoint::eGraphics,
-			scene.materialmanager.pipelinelayouts[0].first,
+			scene.pipelinemanager.getPipelineLayout(0),
 			0,
 			scene.cameras[0].descriptorset,
 			{}
@@ -312,17 +312,16 @@ namespace CT {
 
 	Contaxt& Contaxt::setRenderData()
 	{
-		render.device = device;
-		render.depthimage = depthimage;
-		render.swapchainextent = swapchainextent;
-		render.swapchainimageviews = swapchainImageViews;
-		render.surfaceformat = surfaceformat->format;
-		render.framecount = static_cast<uint32_t>(swapchainImages.size());
-		render.grapicefamilyindex = queuefamilyindices->graphicsFamily.value();
-		render.presentfamilyindex = queuefamilyindices->presentFamily.value();
-		render.grapicesqueue = graphqueue;
-		render.presentqueue = presentqueue;
-		render.swapchain = swapchain;
+		render.setDevice(device)
+			.setCommandPool(commandpool)
+			.setDepthImage(depthimage)
+			.setFrameCount(static_cast<uint32_t>(swapchainImages.size()))
+			.setGraphQueue(graphqueue)
+			.setPresentQueue(presentqueue)
+			.setSurfaceFormat(surfaceformat->format)
+			.setSwapchain(swapchain)
+			.setSwapchainExtent(swapchainextent.value())
+			.setSwapchainImageViews(swapchainImageViews);
 		render.init();
 		return *this;
 	}
@@ -381,7 +380,7 @@ namespace CT {
 		scene.setDevice(device)
 			.setPhysicalDevice(physicaldevice)
 			.setQueueFamilyIndex(queuefamilyindices->graphicsFamily.value())
-			.setRenderPass(render.renderpass)
+			.setRenderPass(render.getRenderPass())
 			.setCommandPool(commandpool)
 			.setPresentQueue(presentqueue);
 		scene.init();

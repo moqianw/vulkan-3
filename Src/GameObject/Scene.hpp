@@ -3,6 +3,7 @@
 #include "Mesh.hpp"
 #include "../utils/CommandPool.hpp"
 #include "Camera.hpp"
+#include "Pipeline.hpp"
 namespace GM {
 	class Scene {
 	public:
@@ -36,8 +37,14 @@ namespace GM {
 		std::vector<std::shared_ptr<GM::GameObject>> const getGameObjects() {
 			return gameobjects;
 		}
+
+
 		std::vector<GM::Camera> cameras;
 		MaterialManager materialmanager;
+		ShaderManager shadermanager;
+		PipelineManager pipelinemanager;
+
+
 		void destroy();
 	private:
 	protected:
@@ -50,8 +57,7 @@ namespace GM {
 
 
 
-		ShaderManager shadermanager;
-		
+
 		std::shared_ptr<UT::CommandPool> commandpool;
 		std::vector<std::shared_ptr<GM::GameObject>> gameobjects;
 
