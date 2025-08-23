@@ -14,6 +14,11 @@ namespace RE {
 		Allocation() = default;
 		Allocation(const vk::DeviceMemory& memory,const vk::DeviceSize& size,const vk::DeviceSize& offset):
 			memory(memory),size(size),offset(offset){ }
+		bool operator==(const Allocation& other) const {
+			return memory == other.memory &&
+				offset == other.offset &&
+				size == other.size;
+		}
 	};
 
 	struct MemoryBlock {
@@ -27,6 +32,7 @@ namespace RE {
 		};
 		std::vector<FreeRegion> freeregions;
 	};
+
 	class Allocator {
 	public:
 		Allocator() = default;
@@ -37,8 +43,8 @@ namespace RE {
 
 		Allocator& setDevice(const vk::Device& device);
 		Allocator& setPhysicalDevice(const vk::PhysicalDevice& physicaldevice);
-		vk::Buffer createBuffer(const UT::BufferCreateInfo& createinfo);
-		vk::Image createImage(const UT::ImageCreateInfo& createinfo);
+		UT::Buffer createBuffer(const UT::BufferCreateInfo& createinfo);
+		UT::Image createImage(const UT::ImageCreateInfo& createinfo);
 		Allocation allocate(const vk::DeviceSize& size, const vk::DeviceSize& alignment, const uint32_t& memorytypeindex);
 		void free(const Allocation& allocation);
 		void destroyBuffer(const vk::Buffer& buffer);
@@ -48,6 +54,9 @@ namespace RE {
 		std::optional<uint32_t> findMemorytypeIndex(const uint32_t& typeFilter, vk::MemoryPropertyFlags memorypropertyflags);		
 		MemoryBlock& createMemoryBlock(const vk::DeviceSize& size, const uint32_t& memorytypeindex);
 		void mergeFreeRegions(MemoryBlock& block);
+		vk::DeviceSize nextBlockSize = 16 * 1024 * 1024;       // 初始块大小 16MB
+		const vk::DeviceSize maxBlockSize = 256 * 1024 * 1024; // 最大块大小 256MB
+		vk::DeviceSize getNextBlockSize(const vk::DeviceSize& requestSize);
 		vk::Device device = nullptr;
 		vk::PhysicalDevice physicaldevice = nullptr;
 		std::vector<MemoryBlock> memoryblocks;

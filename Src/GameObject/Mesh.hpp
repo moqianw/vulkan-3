@@ -48,22 +48,20 @@ namespace GM {
 		
 		std::vector<UT::Vertex4> vertices;
 		std::vector<uint32_t> indices;
-		std::unique_ptr<UT::Buffer> verticesBuffer;
-		std::unique_ptr<UT::Buffer> indicesBuffer;
+		UT::Buffer verticesBuffer;
+		UT::Buffer indicesBuffer;
 		void destroyTampData() {
-			verticesBuffer_.reset();
-			indicesBuffer_.reset();
+
 		}
 		void load(MeshLoadInfo& loadinfo);
 		Mesh() = default;
 		~Mesh() {
-			verticesBuffer.reset();
-			indicesBuffer.reset();
+
 		}
 	protected:
 		friend class MeshRender;
-		std::unique_ptr<UT::Buffer> verticesBuffer_;
-		std::unique_ptr<UT::Buffer> indicesBuffer_;
+		UT::Buffer verticesBuffer_;
+		UT::Buffer indicesBuffer_;
 		
 
 	};
