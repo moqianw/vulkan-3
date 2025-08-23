@@ -19,7 +19,7 @@ add_executable(mvulkan
     "Src/utils/DescriptorPool.cpp" 
     "Src/Render.cpp" 
     "Src/GameObject/Shader.cpp" 
-    "Src/GameObject/Camera.cpp" "Src/GameObject/Pipeline.cpp")
+    "Src/GameObject/Camera.cpp" "Src/GameObject/Pipeline.cpp" "Src/utils/Resource/Allocation.cpp")
 option(USE_LOCAL_VULKAN "Use Vulkan from local SDK path" ON)
 if (USE_LOCAL_VULKAN)
     set(VULKAN_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/thirdparty/Include")

@@ -9,6 +9,7 @@ namespace UT {
 
 
 		auto memoryrequirements = device.getBufferMemoryRequirements(buffer);
+
 		if (createinfo.allocateMemory) {
 
 			vk::MemoryAllocateInfo allocateinfo;

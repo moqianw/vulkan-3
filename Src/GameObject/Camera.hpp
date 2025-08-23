@@ -19,6 +19,7 @@ namespace GM {
 		void updata();
 		std::shared_ptr<UT::Buffer> uniformbuffer;
 		vk::DescriptorSet descriptorset = nullptr;
+		vk::PipelineLayout pipelinelayout = nullptr;
 
 	};
 }
