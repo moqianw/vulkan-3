@@ -47,8 +47,8 @@ namespace CT {
 			scene.cameras[0].descriptorset,
 			{}
 		);
-		auto size = scene.getGameObjects()[0]->getComponent<GM::MeshRender>()->mesh->indices.size();
-		cmd.drawIndexed(size, 1, 0, 0, 0);
+		auto count = scene.getGameObjects()[0]->getComponent<GM::MeshRender>()->mesh.count;
+		cmd.drawIndexed(count, 1, 0, 0, 0);
 		render.end();
 		
 	}

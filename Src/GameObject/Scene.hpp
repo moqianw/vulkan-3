@@ -4,6 +4,7 @@
 #include "../utils/CommandPool.hpp"
 #include "Camera.hpp"
 #include "Pipeline.hpp"
+#include "../utils/Resource/Resource.hpp"
 namespace GM {
 	class Scene {
 	public:
@@ -43,7 +44,7 @@ namespace GM {
 		MaterialManager materialmanager;
 		ShaderManager shadermanager;
 		PipelineManager pipelinemanager;
-
+		RE::ResourceManager resourcemanager;
 
 		void destroy();
 	private:

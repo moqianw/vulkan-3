@@ -17,7 +17,7 @@ namespace GM {
 		Camera();
 		~Camera();
 		void updata();
-		std::shared_ptr<UT::Buffer> uniformbuffer;
+		UT::Buffer uniformbuffer;
 		vk::DescriptorSet descriptorset = nullptr;
 		vk::PipelineLayout pipelinelayout = nullptr;
 

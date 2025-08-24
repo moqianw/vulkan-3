@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Allocation.hpp"
+#include "../../GameObject/Mesh.hpp"
+
 #include <vector>
 namespace RE {
 
@@ -18,15 +20,22 @@ namespace RE {
 			this->physicaldevice = device;
 			return *this;
 		}
-
-
+		ResourceManager& setQueueFamilyIndex(const uint32_t& index) {
+			this->queuefamilyindex = index;
+			return *this;
+		}
+		GM::Mesh createMesh(const GM::MeshCreateInfo& createinfo);
+		void loadData(const GM::Mesh& mesh, const GM::MeshLoadInfo& loadinfo);
 		void init();
 		void destroy();
 	private:
 		vk::Device device = nullptr;
 		vk::PhysicalDevice physicaldevice = nullptr;
+		std::optional<uint32_t> queuefamilyindex;
 		Allocator allocator;
+
 		std::vector<UT::Buffer> buffers;
 		std::vector<UT::Image> images;
+		std::vector<GM::Mesh> meshs;
 	};
 }

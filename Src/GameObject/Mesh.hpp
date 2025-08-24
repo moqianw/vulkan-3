@@ -6,77 +6,77 @@
 
 #include "GameObject.hpp"
 #include "Material.hpp"
+
 namespace GM {
+	class MeshCreateInfo {
+	public:
+		MeshCreateInfo() = default;
+		MeshCreateInfo& setVerticesCount(const uint32_t& count) {
+			this->verticescount = count;
+			return *this;
+		}
+		MeshCreateInfo& setVerticesSize(const uint32_t& size) {
+			this->verticessize = size;
+			return *this;
+		}
+		MeshCreateInfo& setIndicesCount(const uint32_t& count) {
+			this->indicescount = count;
+			return *this;
+		}
+		MeshCreateInfo& setIndicesSize(const uint32_t& size) {
+			this->indicessize = size;
+			return *this;
+		}
+	public:
+		std::optional<uint32_t> verticessize;
+		std::optional<uint32_t> verticescount;
+		std::optional<uint32_t> indicessize;
+		std::optional<uint32_t> indicescount;
+		
+	};
 	class MeshLoadInfo {
 	public:
-		MeshLoadInfo() = default;
-		MeshLoadInfo& setDevice(const vk::Device& device) {
-			this->device = device;
+		MeshLoadInfo& setCommandBuffer(const vk::CommandBuffer& commandbuffer) {
+			this->commandbuffer = commandbuffer;
 			return *this;
 		}
-		MeshLoadInfo& ReleaseMeshDataEnable(const bool& is) {
-			releasedate = is;
+		MeshLoadInfo& setVectices(const std::vector<UT::Vertex4>& vertices) {
+			this->vertices = vertices;
 			return *this;
 		}
-		MeshLoadInfo& setCommandBuffer(vk::CommandBuffer& command) {
-			commandbuffer = &command;
+		MeshLoadInfo& setIndices(const std::vector<uint32_t>& indices) {
+			this->indices = indices;
 			return *this;
 		}
-		MeshLoadInfo& setQueueFamilyIndices(const uint32_t& index) {
-			queuefamilyindices = index;
-			return *this;
-		}
-		MeshLoadInfo& setPhysicalDevice(const vk::PhysicalDevice& dev) {
-			physicaldevice = dev;
-			return *this;
-		}
-		~MeshLoadInfo() {
-			device = nullptr;
-			physicaldevice = nullptr;
-			commandbuffer = nullptr;
-		}
-	protected:
-		friend class Mesh;
-		std::optional<uint32_t> queuefamilyindices;
-		bool releasedate = false;
-		vk::Device device = nullptr;
-		vk::PhysicalDevice physicaldevice = nullptr;
-		vk::CommandBuffer* commandbuffer = nullptr;
+		vk::CommandBuffer commandbuffer;
+		std::vector<UT::Vertex4> vertices;
+		std::vector<uint32_t> indices;
 	};
 	class Mesh{
 	public:
 		
-		std::vector<UT::Vertex4> vertices;
-		std::vector<uint32_t> indices;
+		uint64_t count = 0;
 		UT::Buffer verticesBuffer;
 		UT::Buffer indicesBuffer;
-		void destroyTampData() {
-
-		}
-		void load(MeshLoadInfo& loadinfo);
 		Mesh() = default;
+		Mesh& operator=(const Mesh& other);
+		Mesh(const Mesh& other);
 		~Mesh() {
 
 		}
-	protected:
-		friend class MeshRender;
-		UT::Buffer verticesBuffer_;
-		UT::Buffer indicesBuffer_;
-		
-
 	};
 
 	class MeshRender :public Component {
 		
 	public:
 		
-		std::shared_ptr<Mesh> mesh;
+		Mesh mesh;
 		std::shared_ptr<RHIMaterial> material;
 		MeshRender() {
 		}
 
 		~MeshRender() {
-			mesh.reset();
+			material.reset();
 		}
 	};
 }

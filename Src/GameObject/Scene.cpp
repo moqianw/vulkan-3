@@ -7,6 +7,13 @@ namespace GM {
         
     }
     void Scene::init() {
+        ///resourcemanager
+
+        resourcemanager.setDevice(device)
+            .setPhysicalDevice(physicaldevice);
+        resourcemanager.init();
+
+
 
         //pipeline
 
@@ -118,12 +125,11 @@ namespace GM {
             .setSharingMode(vk::SharingMode::eExclusive)
             .setSize(2 * sizeof(glm::mat4))
             .setUsage(vk::BufferUsageFlagBits::eUniformBuffer);
-        bufferinfo.setDevice(device)
-            .setPhysicalDevice(physicaldevice)
+        bufferinfo
             .setBufferCreateInfo(buffercreateinfo)
             .setMemoryPropertyFlags(vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent)
-            .allocateMemoryEnable(true)
-            .mapMemoryEnable(true);
+            .setAllocateMemoryEnable(true)
+            .setMapMemoryEnable(true);
 
         camera.uniformbuffer = std::make_shared<UT::Buffer>(bufferinfo);
         auto ptr = camera.uniformbuffer->ptr;
@@ -146,6 +152,7 @@ namespace GM {
         commandpool.reset();
         cameras.clear();
         gameobjects.clear();
+        resourcemanager.destroy();
         pipelinemanager.destroy();
         materialmanager.destroy();
         shadermanager.destroy();
