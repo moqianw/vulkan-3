@@ -93,7 +93,7 @@ namespace RE {
 		ibuffercopy.setDstOffset(0)
 			.setSrcOffset(0)
 			.setSize(sizeof(uint32_t) * loadinfo.indices.size());
-		loadinfo.commandbuffer.copyBuffer(ihostbuffer.buffer, mesh.verticesBuffer.buffer, ibuffercopy);
+		loadinfo.commandbuffer.copyBuffer(ihostbuffer.buffer, mesh.indicesBuffer.buffer, ibuffercopy);
 		
 	}
 	void ResourceManager::init() {

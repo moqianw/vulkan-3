@@ -31,6 +31,11 @@ namespace UT {
 			this->memorypropertyflags = memorypropertyflags;
 			return *this;
 		}
+		ImageCreateInfo& setMapMemoryEnable(const bool& is) {
+			mapmemory = is;
+			return *this;
+		}
+
 	public:
 
 		vk::ImageCreateInfo imagecreateinfo;
@@ -39,6 +44,7 @@ namespace UT {
 		vk::MemoryPropertyFlags memorypropertyflags;
 		bool allocatememory = false;
 		bool createimageview = false;
+		bool mapmemory = false;
 	};
 	struct Image {
 	public:
