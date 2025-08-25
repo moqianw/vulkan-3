@@ -61,6 +61,7 @@ namespace RE {
 			.setMapMemoryEnable(true)
 			.setBufferCreateInfo(vbuffercreateinfo);
 		auto vhostbuffer = createBuffer(vhcreateinfo);
+		auto size = sizeof(UT::Vertex4) * loadinfo.vertices.size();
 		memcpy(vhostbuffer.ptr, loadinfo.vertices.data(), sizeof(UT::Vertex4) * loadinfo.vertices.size());
 
 		vk::BufferCopy vbuffercopy;

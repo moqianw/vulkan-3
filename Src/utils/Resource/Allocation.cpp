@@ -13,6 +13,11 @@ namespace RE {
 		if (!device) return;
 		for (auto& memoryblock : memoryblocks) {
 			if (memoryblock.memory) {
+				if (memoryblock.mapped) {
+					device.unmapMemory(memoryblock.memory);
+					memoryblock.mapped = false;
+					memoryblock.mappedPtr = nullptr;
+				}
 				device.freeMemory(memoryblock.memory);
 			}
 			memoryblock.memory = nullptr;
@@ -32,21 +37,21 @@ namespace RE {
 		}
 		throw std::runtime_error("cannot find MemorytypeIndex");
 	}
-	MemoryBlock& Allocator::createMemoryBlock(const vk::DeviceSize& size, const uint32_t& memorytypeindex,bool mapmemory)
+	MemoryBlock& Allocator::createMemoryBlock(const vk::DeviceSize& size, const uint32_t& memorytypeindex)
 	{
 		if (!device) throw std::runtime_error("Allocate Memory ERROR: not set device");
-		memoryblocks.emplace_back();
-		auto& block = memoryblocks.back();
+		MemoryBlock block;
 		vk::MemoryAllocateInfo allocateinfo;
-
 		allocateinfo.setAllocationSize(size)
 			.setMemoryTypeIndex(memorytypeindex);
 		block.memory = device.allocateMemory(allocateinfo);
 		if(!block.memory) throw std::runtime_error("Allocate Memory ERROR: allocate memory block error");
 		block.size = size;
+		block.memoryTypeIndex = memorytypeindex;
+		block.mapped = false;
+		block.mappedPtr = nullptr;
 		block.freeregions.emplace_back(size, 0);
-		block.typeindex = memorytypeindex;
-		if(mapmemory) block.mappedptr = device.mapMemory(block.memory, 0, block.size);
+		memoryblocks.emplace_back(block);
 		return memoryblocks.back();
 	}
 	void Allocator::mergeFreeRegions(MemoryBlock& block) {
@@ -69,7 +74,7 @@ namespace RE {
 	{
 		if (!device) throw std::runtime_error("create buffer not set device");
 
-		// ���� VkBuffer
+		// 创建 VkBuffer
 		auto buffer = device.createBuffer(createinfo.buffercreateinfo);
 		if (!buffer) throw std::runtime_error("create buffer false");
 
@@ -80,14 +85,30 @@ namespace RE {
 			auto memReq = device.getBufferMemoryRequirements(buffer);
 
 			auto index = findMemorytypeIndex(memReq.memoryTypeBits, createinfo.memorypropertyflags).value();
-			auto alloc = allocate(memReq.size, memReq.alignment, index, createinfo.mapmemory);
+			auto alloc = allocate(memReq.size, memReq.alignment, index);
 
 			device.bindBufferMemory(buffer, alloc.memory, alloc.offset);
 
 			ubuffer.memory = alloc.memory;
 			ubuffer.offset = alloc.offset;
 			ubuffer.size = alloc.size;
-			ubuffer.ptr = alloc.mappedptr;
+
+			if (createinfo.mapmemory) {
+				auto memProps = physicaldevice.getMemoryProperties();
+				if ((memProps.memoryTypes[index].propertyFlags & vk::MemoryPropertyFlagBits::eHostVisible) == vk::MemoryPropertyFlagBits::eHostVisible) {
+					MemoryBlock* ownerBlock = nullptr;
+					for (auto& block : memoryblocks) {
+						if (block.memory == alloc.memory) { ownerBlock = &block; break; }
+					}
+					if (ownerBlock) {
+						if (!ownerBlock->mapped) {
+							ownerBlock->mappedPtr = device.mapMemory(ownerBlock->memory, 0, VK_WHOLE_SIZE);
+							ownerBlock->mapped = true;
+						}
+						ubuffer.ptr = static_cast<char*>(ownerBlock->mappedPtr) + ubuffer.offset;
+					}
+				}
+			}
 		}
 
 		return ubuffer;
@@ -104,7 +125,7 @@ namespace RE {
 		if (createinfo.allocatememory) {
 			auto requirement = device.getImageMemoryRequirements(image);
 			auto index = findMemorytypeIndex(requirement.memoryTypeBits, createinfo.memorypropertyflags).value();
-			auto alloc = allocate(requirement.size, requirement.alignment, index, createinfo.mapmemory);
+			auto alloc = allocate(requirement.size, requirement.alignment, index);
 			device.bindImageMemory(image, alloc.memory, alloc.offset);
 			uimage.memory = alloc.memory;
 			uimage.offset = alloc.offset;
@@ -119,50 +140,61 @@ namespace RE {
 	}
 
 	Allocation Allocator::allocate(
-		const vk::DeviceSize& size, const vk::DeviceSize& alignment, const uint32_t& memorytypeindex,bool mapmemory)
+		const vk::DeviceSize& size, const vk::DeviceSize& alignment, const uint32_t& memorytypeindex)
 	{
 		assert((alignment & (alignment - 1)) == 0 && "Alignment must be power of two");
 
-		// ---- �� alignment ���� size ----
+		// ---- 按 alignment 对齐 size ----
 		vk::DeviceSize alignedSize = (size + alignment - 1) & ~(alignment - 1);
 
 		for (auto& block : memoryblocks) {
-			if(block.typeindex.has_value() && block.typeindex.value() != memorytypeindex){
-				for (auto it = block.freeregions.begin(); it != block.freeregions.end(); ++it) {
-					vk::DeviceSize alignedOffset = (it->offset + alignment - 1) & ~(alignment - 1);
+			if (block.memoryTypeIndex != memorytypeindex) continue; // 仅从相同类型的块里分配
+			for (size_t idx = 0; idx < block.freeregions.size(); ++idx) {
+				auto &reg = block.freeregions[idx];
+				vk::DeviceSize alignedOffset = (reg.offset + alignment - 1) & ~(alignment - 1);
+				vk::DeviceSize regionStart = reg.offset;
+				vk::DeviceSize regionEnd   = reg.offset + reg.size;
 
-					if (alignedOffset + alignedSize <= it->offset + it->size) {
-						vk::DeviceSize freeEnd = it->offset + it->size;
+				if (alignedOffset + alignedSize <= regionEnd) {
+					vk::DeviceSize freeEnd = regionEnd;
+					vk::DeviceSize leftSize  = (alignedOffset > regionStart) ? (alignedOffset - regionStart) : 0;
+					vk::DeviceSize rightStart = alignedOffset + alignedSize;
+					vk::DeviceSize rightSize  = (rightStart < freeEnd) ? (freeEnd - rightStart) : 0;
 
-						// ���ʣ��ռ�
-						if (alignedOffset > it->offset) {
-							block.freeregions.insert(it, { it->offset, alignedOffset - it->offset });
-						}
-
-						// ���� freeRegion
-						it->offset = alignedOffset + alignedSize;
-						it->size = freeEnd - it->offset;
-						if (it->size == 0) block.freeregions.erase(it);
-
-						return Allocation(block.memory, alignedSize, alignedOffset,(void*)((char*)(block.mappedptr) + alignedOffset));
+					if (leftSize == 0 && rightSize == 0) {
+						// 完全占满该区间
+						block.freeregions.erase(block.freeregions.begin() + idx);
+					} else if (leftSize > 0 && rightSize == 0) {
+						// 只剩左边
+						reg.size = leftSize;
+					} else if (leftSize == 0 && rightSize > 0) {
+						// 只剩右边
+						reg.offset = rightStart;
+						reg.size   = rightSize;
+					} else {
+						// 左右都剩：当前改为左片段，右片段插入到 idx+1
+						reg.size = leftSize;
+						RE::MemoryBlock::FreeRegion right{ rightSize, rightStart };
+						block.freeregions.insert(block.freeregions.begin() + idx + 1, right);
 					}
+
+					return Allocation(block.memory, alignedSize, alignedOffset);
 				}
 			}
 		}
 
-		// ---- ���û�п��õģ����½�һ�� block ----
+		// ---- 没有可用的，创建新的 block ----
 		vk::DeviceSize newBlockSize = getNextBlockSize(size);
-		auto& block = createMemoryBlock(newBlockSize, memorytypeindex,mapmemory);
+		auto& block = createMemoryBlock(newBlockSize, memorytypeindex);
 
-		auto it = block.freeregions.begin();
-		vk::DeviceSize alignedOffset = (it->offset + alignment - 1) & ~(alignment - 1);
+		// 使用首个空闲区间分配
+		vk::DeviceSize alignedOffset = (block.freeregions[0].offset + alignment - 1) & ~(alignment - 1);
+		vk::DeviceSize freeEnd = block.freeregions[0].offset + block.freeregions[0].size;
+		block.freeregions[0].offset = alignedOffset + alignedSize;
+		block.freeregions[0].size = freeEnd - block.freeregions[0].offset;
+		if (block.freeregions[0].size == 0) block.freeregions.erase(block.freeregions.begin());
 
-		vk::DeviceSize freeEnd = it->offset + it->size;
-		it->offset = alignedOffset + alignedSize;
-		it->size = freeEnd - it->offset;
-		if (it->size == 0) block.freeregions.erase(it);
-
-		return Allocation(block.memory, alignedSize, alignedOffset, (void*)((char*)(block.mappedptr) + alignedOffset));
+		return Allocation(block.memory, alignedSize, alignedOffset);
 	}
 
 
