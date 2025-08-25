@@ -6,6 +6,7 @@ namespace UT {
 		offset = other.offset;
 		buffer = other.buffer;
 		ptr = other.ptr;
+		return *this;
 	}
 	Buffer::Buffer(const Buffer& other) :
 		memory(other.memory),

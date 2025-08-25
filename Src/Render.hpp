@@ -27,7 +27,7 @@ namespace CT {
 		void end();
 		void render(const std::vector<std::shared_ptr<GM::GameObject>>& objects);
 		void bindMaterial(const std::shared_ptr<GM::RHIMaterial>& material);
-		void bindMesh(const std::shared_ptr<GM::Mesh>& mesh);
+		void bindMesh(const GM::Mesh& mesh);
 		void init();
 		void destroy();
 		Frame& currentFrame() {
@@ -39,7 +39,7 @@ namespace CT {
 		Render& setGraphQueue(const vk::Queue& queue);
 		Render& setPresentQueue(const vk::Queue& queue);
 		Render& setSwapchainExtent(const vk::Extent2D& extent);
-		Render& setDepthImage(const std::shared_ptr<UT::Image> depthimage);
+		Render& setDepthImage(const UT::Image& depthimage);
 		Render& setSwapchainImageViews(const std::vector<vk::ImageView>& imageviews);
 		Render& setSwapchain(const vk::SwapchainKHR& swapchain);
 		Render& setFrameCount(const uint32_t& count);
@@ -56,7 +56,7 @@ namespace CT {
 		vk::Queue presentqueue = nullptr;
 
 		std::optional<vk::Extent2D> swapchainextent;
-		std::shared_ptr<UT::Image> depthimage;
+		UT::Image depthimage;
 		std::vector<vk::ImageView> swapchainimageviews;
 		vk::SwapchainKHR swapchain = nullptr;
 		uint32_t framecount = 0;

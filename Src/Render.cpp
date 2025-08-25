@@ -118,12 +118,12 @@ namespace CT {
 		
 	}
 
-	void Render::bindMesh(const std::shared_ptr<GM::Mesh>& mesh) {
+	void Render::bindMesh(const GM::Mesh& mesh) {
 		auto& cmd = currentFrame().commandbuffer;
-		vk::Buffer vertexBuffers[] = { mesh->verticesBuffer->buffer };
+		vk::Buffer vertexBuffers[] = { mesh.verticesBuffer.buffer };
 		vk::DeviceSize offsets[] = { 0 };
 		cmd.bindVertexBuffers(0, 1, vertexBuffers, offsets);
-		cmd.bindIndexBuffer(mesh->indicesBuffer->buffer, 0, vk::IndexType::eUint32);
+		cmd.bindIndexBuffer(mesh.indicesBuffer.buffer, 0, vk::IndexType::eUint32);
 		
 	}
 
@@ -217,7 +217,7 @@ namespace CT {
 			.setRenderPass(renderpass)
 			.setWidth(swapchainextent->width);
 		for (size_t i = 0; i < framebuffers.size(); i++) {
-			std::vector<vk::ImageView> imageviews = { swapchainimageviews[i],depthimage->imageview };
+			std::vector<vk::ImageView> imageviews = { swapchainimageviews[i],depthimage.imageview };
 			createinfo.setAttachments(imageviews); // µ¥ÔªËØ vector
 			framebuffers[i] = device.createFramebuffer(createinfo);
 		}
@@ -225,13 +225,12 @@ namespace CT {
 
 	void Render::destroy() {
 		if (!device) return;
-		depthimage.reset();
 		for (auto& framebuffer : framebuffers) {
 			if (framebuffer) device.destroyFramebuffer(framebuffer);
 		}
 		commandpool.reset();
 		if (renderpass) device.destroyRenderPass(renderpass);
-
+		renderpass = nullptr;
 		for (auto& frame : frames) {
 			device.destroySemaphore(frame.imageAvailableSemaphores);
 			device.destroySemaphore(frame.renderFinishedSemaphores);
@@ -246,7 +245,7 @@ namespace CT {
 		this->device = device;
 		return *this;
 	}
-	Render& Render::setDepthImage(const std::shared_ptr<UT::Image> image) {
+	Render& Render::setDepthImage(const UT::Image& image) {
 		this->depthimage = image;
 		return *this;
 	}

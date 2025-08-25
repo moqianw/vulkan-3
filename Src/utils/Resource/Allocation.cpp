@@ -65,23 +65,32 @@ namespace RE {
 	UT::Buffer Allocator::createBuffer(const UT::BufferCreateInfo& createinfo)
 	{
 		if (!device) throw std::runtime_error("create buffer not set device");
+
+		// 创建 VkBuffer
 		auto buffer = device.createBuffer(createinfo.buffercreateinfo);
-		if(!buffer) throw std::runtime_error("create buffer false");
-		
+		if (!buffer) throw std::runtime_error("create buffer false");
+
 		UT::Buffer ubuffer;
 		ubuffer.buffer = buffer;
+
 		if (createinfo.allocateMemory) {
-			auto memoryrequirements = device.getBufferMemoryRequirements(buffer);
-			auto index = findMemorytypeIndex(memoryrequirements.memoryTypeBits, createinfo.memorypropertyflags).value();
-			auto alloc = allocate(memoryrequirements.size, memoryrequirements.alignment, index);
-			device.bindBufferMemory(buffer, alloc.memory, alloc.offset);	
+			auto memReq = device.getBufferMemoryRequirements(buffer);
+
+			auto index = findMemorytypeIndex(memReq.memoryTypeBits, createinfo.memorypropertyflags).value();
+			auto alloc = allocate(memReq.size, memReq.alignment, index);
+
+			device.bindBufferMemory(buffer, alloc.memory, alloc.offset);
+
 			ubuffer.memory = alloc.memory;
 			ubuffer.offset = alloc.offset;
 			ubuffer.size = alloc.size;
+
 			if (createinfo.mapmemory) {
-				ubuffer.ptr = device.mapMemory(ubuffer.memory, ubuffer.offset, ubuffer.size);
+				// 用 VK_WHOLE_SIZE 避免 size 对齐问题
+				ubuffer.ptr = device.mapMemory(ubuffer.memory, ubuffer.offset, VK_WHOLE_SIZE);
 			}
 		}
+
 		return ubuffer;
 	}
 
@@ -103,51 +112,58 @@ namespace RE {
 			uimage.size = alloc.size;
 		}
 		if (createinfo.createimageview) {
-			uimage.imageview = device.createImageView(createinfo.imageviewcreateinfo);
+			auto viewinfo = createinfo.imageviewcreateinfo;
+			viewinfo.setImage(uimage.image);
+			uimage.imageview = device.createImageView(viewinfo);
 		}
 		return uimage;
 	}
 
 	Allocation Allocator::allocate(
-		const vk::DeviceSize& size, const vk::DeviceSize& alignment, const uint32_t& memorytypeindex) {
+		const vk::DeviceSize& size, const vk::DeviceSize& alignment, const uint32_t& memorytypeindex)
+	{
 		assert((alignment & (alignment - 1)) == 0 && "Alignment must be power of two");
+
+		// ---- 按 alignment 对齐 size ----
+		vk::DeviceSize alignedSize = (size + alignment - 1) & ~(alignment - 1);
 
 		for (auto& block : memoryblocks) {
 			for (auto it = block.freeregions.begin(); it != block.freeregions.end(); ++it) {
 				vk::DeviceSize alignedOffset = (it->offset + alignment - 1) & ~(alignment - 1);
 
-				if (alignedOffset + size <= it->offset + it->size) {
+				if (alignedOffset + alignedSize <= it->offset + it->size) {
 					vk::DeviceSize freeEnd = it->offset + it->size;
 
-					// 左边空间保留
+					// 左边剩余空间
 					if (alignedOffset > it->offset) {
 						block.freeregions.insert(it, { it->offset, alignedOffset - it->offset });
 					}
 
-					// 更新当前 freeRegion
-					it->offset = alignedOffset + size;
+					// 更新 freeRegion
+					it->offset = alignedOffset + alignedSize;
 					it->size = freeEnd - it->offset;
 					if (it->size == 0) block.freeregions.erase(it);
 
-					return Allocation(block.memory, size, alignedOffset);
+					return Allocation(block.memory, alignedSize, alignedOffset);
 				}
 			}
 		}
 
-		// 新建 block (指数扩展)
+		// ---- 如果没有可用的，就新建一个 block ----
 		vk::DeviceSize newBlockSize = getNextBlockSize(size);
 		auto& block = createMemoryBlock(newBlockSize, memorytypeindex);
 
 		auto it = block.freeregions.begin();
 		vk::DeviceSize alignedOffset = (it->offset + alignment - 1) & ~(alignment - 1);
 
-		VkDeviceSize freeEnd = it->offset + it->size;
-		it->offset = alignedOffset + size;
+		vk::DeviceSize freeEnd = it->offset + it->size;
+		it->offset = alignedOffset + alignedSize;
 		it->size = freeEnd - it->offset;
 		if (it->size == 0) block.freeregions.erase(it);
 
-		return Allocation(block.memory, size, alignedOffset);
+		return Allocation(block.memory, alignedSize, alignedOffset);
 	}
+
 
 	vk::DeviceSize Allocator::getNextBlockSize(const vk::DeviceSize& size) {
 		vk::DeviceSize blockSize = std::max(size, nextBlockSize);

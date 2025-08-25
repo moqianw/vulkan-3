@@ -14,5 +14,6 @@ namespace UT {
 		memory = other.memory;
 		size = other.size;
 		offset = other.offset;
+		return *this;
 	}
 }

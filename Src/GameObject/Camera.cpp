@@ -19,11 +19,6 @@ namespace GM {
 			);
 
 	}
-	Camera::~Camera()
-	{
-		uniformbuffer.reset();
-		descriptorset = nullptr;
-	}
 	void Camera::updata()
 	{
 	}

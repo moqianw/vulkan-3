@@ -15,7 +15,7 @@ namespace GM {
 		glm::vec3 target;
 		glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
 		Camera();
-		~Camera();
+		~Camera() = default;
 		void updata();
 		UT::Buffer uniformbuffer;
 		vk::DescriptorSet descriptorset = nullptr;

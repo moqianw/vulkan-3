@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="E:\Documents\VulKan\vulkan-3\build\CMakeFiles\14473bb2b4ce52e4014247968bbe4a41\shader.frag.spv.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\VulKan\vulkan-3\build\CMakeFiles\14473bb2b4ce52e4014247968bbe4a41\shader.vert.spv.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\VulKan\vulkan-3\build\CMakeFiles\0622af9c4e9ba66293fcea65c1e39538\ShadersTarget.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\Documents\VulKan\vulkan-3\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="E:\Documents\VulKan\vulkan-3\build\CMakeFiles\ShadersTarget" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{EC802AB8-90C5-3FE2-87FD-551629E2EED2}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

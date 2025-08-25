@@ -10,9 +10,9 @@ namespace GM {
         ///resourcemanager
 
         resourcemanager.setDevice(device)
-            .setPhysicalDevice(physicaldevice);
+            .setPhysicalDevice(physicaldevice)
+            .setQueueFamilyIndex(queuefamilyindex.value());
         resourcemanager.init();
-
 
 
         //pipeline
@@ -21,6 +21,9 @@ namespace GM {
         pipelinemanager.init();
         ///create material
         materialmanager.begin(device);
+    }
+    void Scene::initData()
+    {
         GM::ShaderCreateInfo shadercreateinfo;
 
         shadercreateinfo.setDevice(device)
@@ -50,7 +53,7 @@ namespace GM {
             .setBindingCount(1);
 
         setlayouts.push_back(vk::DescriptorSetLayout(device.createDescriptorSetLayout(setlayoutcreateinfo)));
-        
+
         materialmanager.addDescriptorSetLayouts(setlayouts);
         std::vector<vk::PushConstantRange> pushconstants;
         pushconstants.push_back(vk::PushConstantRange()
@@ -69,10 +72,9 @@ namespace GM {
         auto gameobject = std::make_shared<GameObject>();
         gameobjects.push_back(gameobject);
         auto meshrender = gameobject->addComponent<GM::MeshRender>();
-        meshrender->mesh = std::make_shared<GM::Mesh>();
-        GM::MeshLoadInfo loadinfo;
-        auto& mesh = meshrender->mesh;
-        mesh->vertices = {
+
+
+        std::vector<UT::Vertex4> vertices = {
         {{-0.5f, -0.5f,  0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}, {0.0f,  0.0f,  1.0f}}, // 0
     {{ 0.5f, -0.5f,  0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}, {0.0f,  0.0f,  1.0f}}, // 1
     {{ 0.5f,  0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}, {0.0f,  0.0f,  1.0f}}, // 2
@@ -84,7 +86,7 @@ namespace GM {
     {{ 0.5f,  0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}, {0.0f,  0.0f, -1.0f}}, // 6
     {{-0.5f,  0.5f, -0.5f}, {0.5f, 0.5f, 0.5f}, {1.0f, 1.0f}, {0.0f,  0.0f, -1.0f}}, // 7
         };
-        mesh->indices = {
+        std::vector<uint32_t> indices = {
             // 前面
     0, 1, 2,  2, 3, 0,
     // 右面
@@ -98,11 +100,23 @@ namespace GM {
     // 下面
     4, 5, 1,  1, 0, 4
         };
-        loadinfo.setDevice(device)
-            .setPhysicalDevice(physicaldevice)
+
+        GM::MeshCreateInfo meshcreateinfo;
+        meshcreateinfo.setIndicesCount(indices.size())
+            .setIndicesSize(sizeof(uint32_t) * indices.size())
+            .setVerticesCount(vertices.size())
+            .setVerticesSize(sizeof(UT::Vertex4) * vertices.size());
+        meshrender->mesh = resourcemanager.createMesh(meshcreateinfo);
+
+
+        GM::MeshLoadInfo loadinfo;
+        loadinfo
             .setCommandBuffer(commandbuffer)
-            .setQueueFamilyIndices(queuefamilyindex.value());
-        mesh->load(loadinfo);
+            .setIndices(indices)
+            .setVectices(vertices);
+        resourcemanager.loadData(meshrender->mesh, loadinfo);
+
+        auto& mesh = meshrender->mesh;
 
         commandbuffer.end();
         vk::SubmitInfo submits;
@@ -116,7 +130,7 @@ namespace GM {
 
         cameras.push_back(GM::Camera());
         auto& camera = cameras[0];
-        
+
         auto sets = materialmanager.createDescriptorSet(setlayouts);
         camera.descriptorset = sets[0];
         UT::BufferCreateInfo bufferinfo;
@@ -131,11 +145,11 @@ namespace GM {
             .setAllocateMemoryEnable(true)
             .setMapMemoryEnable(true);
 
-        camera.uniformbuffer = std::make_shared<UT::Buffer>(bufferinfo);
-        auto ptr = camera.uniformbuffer->ptr;
+        camera.uniformbuffer = resourcemanager.createBuffer(bufferinfo);
+        auto ptr = camera.uniformbuffer.ptr;
         memcpy(ptr, &camera.mat, sizeof(camera.mat));
         vk::DescriptorBufferInfo descriptorbufferinfo;
-        descriptorbufferinfo.setBuffer(camera.uniformbuffer->buffer)
+        descriptorbufferinfo.setBuffer(camera.uniformbuffer.buffer)
             .setOffset(0)
             .setRange(2 * sizeof(glm::mat4));
         vk::WriteDescriptorSet setwrite;
@@ -146,6 +160,7 @@ namespace GM {
             .setDstBinding(0)
             .setDstSet(camera.descriptorset);
         device.updateDescriptorSets({ setwrite }, {});
+
     }
     void Scene::destroy() {
 

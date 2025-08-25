@@ -55,7 +55,7 @@ namespace CT {
 
 	void Contaxt::initWorld()
 	{
-
+		scene.initData();
 	}
 	
 	Contaxt& Contaxt::create(const ContaxtCreateInfo& createinfo)
@@ -67,11 +67,11 @@ namespace CT {
 			pickPhysicalDevice();
 			createDevice();
 			createSwapChain();
-			createImageView();
-			createDepthImageView();
 			createCommandPool();
+			createImageView();
+			initScene();
 			setRenderData();
-			createScene();
+			initWorld();
 		}
 		catch (std::exception& e) {
 			std::cout << e.what() << std::endl;
@@ -312,22 +312,6 @@ namespace CT {
 
 	Contaxt& Contaxt::setRenderData()
 	{
-		render.setDevice(device)
-			.setCommandPool(commandpool)
-			.setDepthImage(depthimage)
-			.setFrameCount(static_cast<uint32_t>(swapchainImages.size()))
-			.setGraphQueue(graphqueue)
-			.setPresentQueue(presentqueue)
-			.setSurfaceFormat(surfaceformat->format)
-			.setSwapchain(swapchain)
-			.setSwapchainExtent(swapchainextent.value())
-			.setSwapchainImageViews(swapchainImageViews);
-		render.init();
-		return *this;
-	}
-
-	Contaxt& Contaxt::createDepthImageView()
-	{
 		UT::ImageCreateInfo createinfo;
 		vk::ImageCreateInfo imagecreateinfo;
 		imagecreateinfo.setExtent({ swapchainextent->width,swapchainextent->height, 1 })
@@ -340,7 +324,7 @@ namespace CT {
 			.setSamples(vk::SampleCountFlagBits::e1)
 			.setSharingMode(vk::SharingMode::eExclusive);
 
-		
+
 
 		vk::ImageViewCreateInfo imageviewcreateinfo;
 		imageviewcreateinfo.setFormat(vk::Format::eD32Sfloat)
@@ -349,18 +333,28 @@ namespace CT {
 			vk::ImageAspectFlagBits::eDepth,
 			0, 1, 0, 1
 				});
-		createinfo.setDevice(device)
+		createinfo
 			.setImageCreateInfo(imagecreateinfo)
 			.setImageViewCreateInfo(imageviewcreateinfo)
 			.setMemoryPropertyFlags(vk::MemoryPropertyFlagBits::eDeviceLocal)
-			.setPhysicalDevice(physicaldevice)
-			.createImageViewEnable(true)
-			.mapMemoryEnable(true);
-		depthimage = std::make_shared<UT::Image>(createinfo);
-		if (!depthimage) throw std::runtime_error("create depthimage false");
-		
+			.setCreateImageViewEnable(true)
+			.setAllocateMemoryEnable(true);
+		auto depthimage = scene.resourcemanager.createImage(createinfo);
+		render.setDevice(device)
+			.setCommandPool(commandpool)
+			.setDepthImage(depthimage)
+			.setFrameCount(static_cast<uint32_t>(swapchainImages.size()))
+			.setGraphQueue(graphqueue)
+			.setPresentQueue(presentqueue)
+			.setSurfaceFormat(surfaceformat->format)
+			.setSwapchain(swapchain)
+			.setSwapchainExtent(swapchainextent.value())
+			.setSwapchainImageViews(swapchainImageViews);
+		render.init();
+		scene.setRenderPass(render.getRenderPass());
 		return *this;
 	}
+
 	Contaxt& Contaxt::createCommandPool()
 	{
 		UT::CommandPoolCreateInfo createinfo;
@@ -374,13 +368,12 @@ namespace CT {
 		return *this;
 	}
 
-	Contaxt& Contaxt::createScene()
+	Contaxt& Contaxt::initScene()
 	{
 		
 		scene.setDevice(device)
 			.setPhysicalDevice(physicaldevice)
 			.setQueueFamilyIndex(queuefamilyindices->graphicsFamily.value())
-			.setRenderPass(render.getRenderPass())
 			.setCommandPool(commandpool)
 			.setPresentQueue(presentqueue);
 		scene.init();
@@ -394,7 +387,8 @@ namespace CT {
 		try {
 			if (device) {
 				device.waitIdle();
-	
+
+				render.destroy();
 				scene.destroy();
 				if (commandpool) {
 					commandpool.reset();
@@ -404,8 +398,6 @@ namespace CT {
 					device.destroyImageView(view);
 				}
 
-				render.destroy();
-				depthimage.reset();
 
 				if (swapchain)
 					device.destroySwapchainKHR(swapchain);

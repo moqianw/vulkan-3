@@ -61,9 +61,8 @@ namespace CT {
 		Contaxt& createImageView();
 
 		Contaxt& setRenderData();
-		Contaxt& createDepthImageView();
 		Contaxt& createCommandPool();
-		Contaxt& createScene();
+		Contaxt& initScene();
 		Contaxt& destroy();
 	protected:
 
@@ -89,8 +88,6 @@ namespace CT {
 		std::vector<vk::ImageView> swapchainImageViews;
 
 		std::shared_ptr<UT::CommandPool> commandpool;
-
-		std::shared_ptr<UT::Image> depthimage;
 
 	};
 }
