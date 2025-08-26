@@ -1,5 +1,19 @@
 #include "DescriptorPool.hpp"
 namespace UT {
+	DescriptorPool::DescriptorPool(const DescriptorPool& other) :
+		device(other.device),
+		descriptorpool(other.descriptorpool),
+		descriptorsets(other.descriptorsets)
+	{
+
+	}
+	DescriptorPool& DescriptorPool::operator=(const DescriptorPool& other) {
+		device = other.device;
+		descriptorpool = other.descriptorpool;
+		descriptorsets = other.descriptorsets;
+		return *this;
+	}
+
 	DescriptorPool::DescriptorPool(const DescriptorPoolCreateInfo& createinfo)
 		: device(createinfo.device)
 	{
