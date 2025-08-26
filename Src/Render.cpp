@@ -121,9 +121,9 @@ namespace CT {
 	void Render::bindMesh(const GM::Mesh& mesh) {
 		auto& cmd = currentFrame().commandbuffer;
 		vk::Buffer vertexBuffers[] = { mesh.verticesBuffer.buffer };
-		vk::DeviceSize offsets[] = { 0 };
+		vk::DeviceSize offsets[] = { mesh.verticesBuffer.offset };
 		cmd.bindVertexBuffers(0, 1, vertexBuffers, offsets);
-		cmd.bindIndexBuffer(mesh.indicesBuffer.buffer, 0, vk::IndexType::eUint32);
+		cmd.bindIndexBuffer(mesh.indicesBuffer.buffer, mesh.indicesBuffer.offset, vk::IndexType::eUint32);
 		
 	}
 

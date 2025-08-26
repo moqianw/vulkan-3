@@ -29,4 +29,13 @@ namespace UT {
 		vk::DescriptorPool descriptorpool;
 		std::vector<vk::DescriptorSet> descriptorsets;
 	};
+
+
+	class DescriptorPoolManage {
+	public:
+
+
+	private:
+		vk::Device device = nullptr;
+	};
 }

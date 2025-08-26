@@ -48,7 +48,7 @@ namespace CT {
 	private:
 		void draw();
 		void initWorld();
-
+		
 		Contaxt& create(const ContaxtCreateInfo& createinfo);
 		Contaxt& createInstance();
 		Contaxt& createWindow(const int& w_,const int& h_, const std::string& name);

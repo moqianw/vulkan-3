@@ -12,6 +12,7 @@ namespace GM {
 		~Scene();
 		void init();
 		void initData();
+		void updata();
 		Scene& setDevice(const vk::Device& device) {
 			this->device = device;
 			return *this;

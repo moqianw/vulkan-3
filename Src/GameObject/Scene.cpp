@@ -173,6 +173,12 @@ namespace GM {
         shadermanager.destroy();
 
     }
+
+    void Scene::updata() {
+        for (auto& camera : cameras) {
+            camera.updata();
+        }
+    }
     Scene::~Scene()
     {
         destroy();
