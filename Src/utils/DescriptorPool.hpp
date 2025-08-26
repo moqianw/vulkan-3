@@ -31,6 +31,7 @@ namespace UT {
 	};
 	class DescriptorPool {
 	public:
+
 		DescriptorPool() = default;
 		DescriptorPool(const DescriptorPoolCreateInfo& createinfo);
 		~DescriptorPool();
@@ -39,6 +40,17 @@ namespace UT {
 		void free(const std::vector<vk::DescriptorSet>& setsToFree);
 		DescriptorPool(const DescriptorPool& other);
 		DescriptorPool& operator=(const DescriptorPool& other);
+		DescriptorPool& operator=(std::nullptr_t) {
+			descriptorpool = nullptr;
+			descriptorsets = {};
+		}
+		operator bool() {
+			return descriptorpool;
+		}
+		bool operator!() {
+			return !descriptorpool;
+		}
+		void destroy();
 	private:
 		vk::Device device = nullptr;
 		vk::DescriptorPool descriptorpool;
@@ -46,10 +58,11 @@ namespace UT {
 	};
 
 
-	class DescriptorPoolManage {
+	class DescriptorPoolManager {
 	public:
-
-
+		void init();
+		void destroy();
+		DescriptorPoolManager& setDevice(const vk::Device& device);
 	private:
 		std::vector<DescriptorPool> pools;
 		vk::Device device = nullptr;

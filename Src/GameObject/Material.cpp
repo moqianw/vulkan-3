@@ -42,6 +42,7 @@ namespace GM {
 	std::vector<vk::DescriptorSet> MaterialManager::createDescriptorSet(const std::vector<vk::DescriptorSetLayout>& setlayout)
 	{
 		if (descriptorpools.empty()) {
+			
 			std::vector<vk::DescriptorPoolSize> poolsize;
 			poolsize.push_back(vk::DescriptorPoolSize().setDescriptorCount(100).setType(vk::DescriptorType::eUniformBuffer));
 			vk::DescriptorPoolCreateInfo poolinfo;

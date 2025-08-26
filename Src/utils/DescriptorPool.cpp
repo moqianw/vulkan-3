@@ -22,8 +22,13 @@ namespace UT {
 		if(!descriptorpool) throw std::runtime_error("Create DescriptorPool ERROR: create false");
 	}
 	DescriptorPool::~DescriptorPool() {
-		device.destroyDescriptorPool(descriptorpool);
+		destroy();
+	}
+	void DescriptorPool::destroy() {
+		if (device && descriptorpool) device.destroyDescriptorPool(descriptorpool);
 		descriptorsets = {};
+		device = nullptr;
+		descriptorpool = nullptr;
 	}
 	std::vector<vk::DescriptorSet> DescriptorPool::allocateDescriptorSets(const std::vector<vk::DescriptorSetLayout>& layouts) {
 		vk::DescriptorSetAllocateInfo allocateinfo;
@@ -46,5 +51,15 @@ namespace UT {
 				descriptorsets.end()
 			);
 		}
+	}
+	DescriptorPoolManager& DescriptorPoolManager::setDevice(const vk::Device& device) {
+		this->device = device;
+		return *this;
+	}
+	void DescriptorPoolManager::init() {
+
+	}
+	void DescriptorPoolManager::destroy() {
+		pools.clear();
 	}
 }
