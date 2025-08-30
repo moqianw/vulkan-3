@@ -71,6 +71,11 @@ namespace UT {
 		DescriptorSetManager& setDevice(const vk::Device& device);
 		std::vector<vk::DescriptorSet> allocateDescriptorSet(const std::vector<vk::DescriptorSetLayout>& layouts);
 	private:
+		void createDescriptorPool(const DescriptorPoolSizeFlagBits& flag);
+		std::vector<vk::DescriptorPoolSize> generalpoolSizes;
+		std::vector<vk::DescriptorPoolSize> shadowpoolSizes;
+		std::vector<vk::DescriptorPoolSize> computepoolSizes;
+		std::vector<vk::DescriptorPoolSize> tinypoolSizes;
 		std::vector<DescriptorPool> pools;
 		vk::Device device = nullptr;
 	};
