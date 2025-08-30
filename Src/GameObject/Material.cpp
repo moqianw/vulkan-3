@@ -8,6 +8,9 @@ namespace GM {
 		createinfo.setInitialDataSize(0);
 	}
 	void MaterialManager::destroy() {
+		for (auto pool : descriptorpools) {
+			pool->destroy();
+		}
 		descriptorpools.clear();
 		for (auto& mat : materials) {
 			mat.reset(); // shared_ptr ×Ô¶¯ÊÍ·Å

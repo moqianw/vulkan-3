@@ -21,9 +21,6 @@ namespace UT {
 		descriptorpool = device.createDescriptorPool(createinfo.createinfo);
 		if(!descriptorpool) throw std::runtime_error("Create DescriptorPool ERROR: create false");
 	}
-	DescriptorPool::~DescriptorPool() {
-		destroy();
-	}
 	void DescriptorPool::destroy() {
 		if (device && descriptorpool) device.destroyDescriptorPool(descriptorpool);
 		descriptorsets = {};
@@ -52,14 +49,51 @@ namespace UT {
 			);
 		}
 	}
-	DescriptorPoolManager& DescriptorPoolManager::setDevice(const vk::Device& device) {
+	DescriptorSetManager& DescriptorSetManager::setDevice(const vk::Device& device) {
 		this->device = device;
 		return *this;
 	}
-	void DescriptorPoolManager::init() {
-
+	std::vector<vk::DescriptorSet> DescriptorSetManager::allocateDescriptorSet(const std::vector<vk::DescriptorSetLayout>& layouts)
+	{
+		
+		return std::vector<vk::DescriptorSet>();
 	}
-	void DescriptorPoolManager::destroy() {
+	void DescriptorSetManager::createDescriptorPool(const DescriptorPoolSizeFlagBits& flag)
+	{
+		DescriptorPoolCreateInfo createinfo;
+		vk::DescriptorPoolCreateInfo poolcreateinfo;
+		poolcreateinfo.setFlags(vk::DescriptorPoolCreateFlagBits::eUpdateAfterBind)
+			.setMaxSets(1)
+			.setPoolSizes(computepoolSizes);
+		createinfo.setDevice(device)
+			.setDescriptorPoolCreateInfo(poolcreateinfo);
+		DescriptorPool pool(createinfo);
+	
+	}
+	void DescriptorSetManager::init() {
+		generalpoolSizes = {
+			{vk::DescriptorType::eUniformBuffer,        1000},
+			{vk::DescriptorType::eCombinedImageSampler, 1000},
+			{vk::DescriptorType::eStorageBuffer,        500},
+			{vk::DescriptorType::eStorageImage,         200},
+			{vk::DescriptorType::eSampler,              200},
+		};
+		shadowpoolSizes = {
+			{vk::DescriptorType::eUniformBuffer,        200},
+			{vk::DescriptorType::eCombinedImageSampler, 200},
+		};
+		computepoolSizes = {
+			{vk::DescriptorType::eStorageBuffer,  500},
+			{vk::DescriptorType::eStorageImage,   500},
+			{vk::DescriptorType::eSampler,        100},
+		};
+		tinypoolSizes = {
+			{vk::DescriptorType::eUniformBuffer,        50},
+			{vk::DescriptorType::eCombinedImageSampler, 50},
+		};
+		if (!device) throw std::runtime_error("Init DescriptorSetManager ERROR: not set device");
+	}
+	void DescriptorSetManager::destroy() {
 		pools.clear();
 	}
 }

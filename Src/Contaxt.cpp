@@ -391,6 +391,7 @@ namespace CT {
 				render.destroy();
 				scene.destroy();
 				if (commandpool) {
+
 					commandpool.reset();
 				}
 

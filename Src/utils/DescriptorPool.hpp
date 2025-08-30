@@ -34,7 +34,7 @@ namespace UT {
 
 		DescriptorPool() = default;
 		DescriptorPool(const DescriptorPoolCreateInfo& createinfo);
-		~DescriptorPool();
+		~DescriptorPool() = default;
 		std::vector<vk::DescriptorSet> allocateDescriptorSets(const std::vector<vk::DescriptorSetLayout>& layouts);
 		void reset();
 		void free(const std::vector<vk::DescriptorSet>& setsToFree);
@@ -56,13 +56,20 @@ namespace UT {
 		vk::DescriptorPool descriptorpool;
 		std::vector<vk::DescriptorSet> descriptorsets;
 	};
+	enum class DescriptorPoolSizeFlagBits {
+		eGeneral,//普通
+		eShadow,//阴影
+		eCompute,//计算
+		eTiny//小型
+	};
 
-
-	class DescriptorPoolManager {
+	class DescriptorSetManager {
 	public:
+		
 		void init();
 		void destroy();
-		DescriptorPoolManager& setDevice(const vk::Device& device);
+		DescriptorSetManager& setDevice(const vk::Device& device);
+		std::vector<vk::DescriptorSet> allocateDescriptorSet(const std::vector<vk::DescriptorSetLayout>& layouts);
 	private:
 		std::vector<DescriptorPool> pools;
 		vk::Device device = nullptr;
