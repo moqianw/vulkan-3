@@ -1,4 +1,4 @@
-#include "Material.hpp"
+ï»¿#include "Material.hpp"
 #include "../utils/Vertex.hpp"
 #include "../utils/File.hpp"
 namespace GM {
@@ -13,11 +13,11 @@ namespace GM {
 		}
 		descriptorpools.clear();
 		for (auto& mat : materials) {
-			mat.reset(); // shared_ptr ×Ô¶¯ÊÍ·Å
+			mat.reset(); // shared_ptr è‡ªåŠ¨é‡Šæ”¾
 		}
 		materials.clear();
 
-		// ÇåÀí pipeline layouts + descriptor set layouts
+		// æ¸…ç† pipeline layouts + descriptor set layouts
 		for (auto& setlayout: descriptorsetlayouts) {
 
 			if (setlayout) {
