@@ -58,6 +58,9 @@
     <ClCompile Include="E:\Documents\VulKan\vulkan-3\Src\utils\Resource\Resource.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="E:\Documents\VulKan\vulkan-3\Src\GameObject\input\input.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="E:\Documents\VulKan\vulkan-3\CMakeLists.txt" />

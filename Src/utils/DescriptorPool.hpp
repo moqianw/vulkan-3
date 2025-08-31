@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include <vulkan/vulkan.hpp>
 namespace UT {
@@ -28,6 +28,7 @@ namespace UT {
 		friend class DescriptorPool;
 		vk::DescriptorPoolCreateInfo createinfo;
 		vk::Device device = nullptr;
+		
 	};
 	class DescriptorPool {
 	public:
@@ -55,14 +56,15 @@ namespace UT {
 		vk::Device device = nullptr;
 		vk::DescriptorPool descriptorpool;
 		std::vector<vk::DescriptorSet> descriptorsets;
+
 	};
 	enum class DescriptorPoolSizeFlagBits {
-		eGeneral,//ÆÕÍ¨
-		eShadow,//ÒõÓ°
-		eCompute,//¼ÆËã
-		eTiny//Ð¡ÐÍ
+		eGeneral,//ï¿½ï¿½Í¨
+		eShadow,//ï¿½ï¿½Ó°
+		eCompute,//ï¿½ï¿½ï¿½ï¿½
+		eTiny//Ð¡ï¿½ï¿½
 	};
-
+	
 	class DescriptorSetManager {
 	public:
 		
